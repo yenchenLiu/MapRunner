@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">Map Runner</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="google_play_service_missing">裝置沒有安裝Google Play服務</string>
+    <string name="title_activity_item">ItemActivity</string>
+    <string name="write_external_storage_denied">沒有授權位置</string>
+
+    <string-array name="class_name">
+        <item>探索世界</item>
+        <item>資訊</item>
+        <item>紅利</item>
+    </string-array>
+    <string name="title_activity_add_site">AddSiteActivity</string>
+    <string name="title_activity_login">Sign in</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password (optional)</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="error_invalid_email">This email address is invalid</string>
+    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="permission_rationale">"Contacts permissions are needed for providing email
+        completions."
+    </string>
+</resources>
