@@ -30,4 +30,14 @@ public final class JsonUtils {
         parsedLoginData.put(ACCESS_TOKEN_CODE, resultJson.getString(ACCESS_TOKEN_CODE));
         return parsedLoginData;
     }
+    public static String getUsernameFromJson(Context context, String loginJsonStr) throws JSONException{
+        final String USERNAME_CODE = "username";
+        JSONObject resultJson = new JSONObject(loginJsonStr);
+        return resultJson.getString(USERNAME_CODE);
+    }
+    public static int getServerIDFromJson(Context context, String loginJsonStr) throws JSONException{
+        final String ID_CODE = "id";
+        JSONObject resultJson = new JSONObject(loginJsonStr);
+        return resultJson.getInt(ID_CODE);
+    }
 }

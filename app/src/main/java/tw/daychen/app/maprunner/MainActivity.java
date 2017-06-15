@@ -1,10 +1,12 @@
 package tw.daychen.app.maprunner;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.Location;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -155,9 +157,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     MY_PERMISSIONS_REQUEST_LOCATION);
         } else {
             Log.d(LOG_TAG, "havePermission");
+
+            // TODO 有時候地點會載入失敗
             // 位置資訊更新的時候，應用程式會自動呼叫LocationListener.onLocationChanged
             LocationServices.FusedLocationApi.requestLocationUpdates(
                     googleApiClient, locationRequest, MainActivity.this);
+
+            LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+            Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            currentLocation = location;
+
+            Log.d(LOG_TAG, "load location");
+
         }
     }
 
@@ -211,8 +222,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         // 讀取記事儲存的座標
         Intent intent = getIntent();
-        double lat = intent.getDoubleExtra("lat", 0.0);
-        double lng = intent.getDoubleExtra("lng", 0.0);
+        double lat = intent.getDoubleExtra("lat", 24.95);
+        double lng = intent.getDoubleExtra("lng", 121.23);
         Log.d(LOG_TAG, "lat:"+ String.valueOf(lat) + ",lng"+ String.valueOf(lng));
         if (lat != 0.0 && lng != 0.0) {
             // 建立座標物件

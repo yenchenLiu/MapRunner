@@ -325,8 +325,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             // TODO: attempt authentication against a network service.
             String searchResult;
             try {
-                // Simulate network access.
-                Log.d(LOG_TAG, "start login");
                 HashMap<String, String> userpass = new HashMap<>();
                 userpass.put("username", mEmail);
                 userpass.put("password", mPassword);
@@ -346,7 +344,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 e.printStackTrace();
                 return false;
             }
-            String selection = "key=?s";
+            String selection = "key=?";
             String[] selectionArgs = new String[1];
             selectionArgs[0] = ACCESS_TOKEN_STR;
 
@@ -369,7 +367,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
                     ContentValues cv = new ContentValues();
                     cv.put(MapRunnerContract.SettingEntry.COLUMN_VALUE, loginData.get("access_token"));
-                    Log.d(LOG_TAG, String.valueOf(id));
                     getContentResolver().update(contacts_uri, cv, MapRunnerContract.SettingEntry._ID +" = " + String.valueOf(id), null);
                 }
             }
@@ -377,13 +374,44 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 e.printStackTrace();
                 return false;
             }
-            try(Cursor cursor = getContentResolver().query(contacts_uri, null, selection, selectionArgs, null)) {
-                Log.d(LOG_TAG, String.valueOf(cursor.getCount()));
-
-            }
-//            loginData.get()
-
-            // TODO: register the new account here.
+//            // get Username
+//            try {
+//                String urlQuery = "maprunner/users/get_username/";
+//                URL Url = NetUtils.buildUrl(urlQuery, LoginActivity.this);
+//                searchResult = NetUtils.getResponseFromAccessCode(Url, "GET", null);
+//                String username;
+//                username = JsonUtils.getUsernameFromJson(LoginActivity.this, searchResult);
+//                String selection_username = "key=username";
+//                try (Cursor cursor = getContentResolver().query(contacts_uri, null, selection, null, null)) {
+//
+//
+//                    Log.d(LOG_TAG, "username:" + String.valueOf(cursor.getCount()));
+//                    if (cursor.getCount() == 0){
+//                        ContentValues[] cv_list = new ContentValues[1];
+//                        cv_list[0] = new ContentValues();
+//                        cv_list[0].put(MapRunnerContract.SettingEntry.COLUMN_KEY, USERNAME_STR);
+//                        cv_list[0].put(MapRunnerContract.SettingEntry.COLUMN_VALUE, username);
+//                        getContentResolver().bulkInsert(contacts_uri, cv_list);
+//                    }
+//                    else {
+//                        cursor.moveToFirst();
+//                        Log.d(LOG_TAG, "key:" + cursor.getString(cursor.getColumnIndex(MapRunnerContract.SettingEntry.COLUMN_KEY)));
+//                        Log.d(LOG_TAG, "value:" + cursor.getString(cursor.getColumnIndex(MapRunnerContract.SettingEntry.COLUMN_VALUE)));
+//                        int id = cursor.getInt(cursor.getColumnIndex(MapRunnerContract.SettingEntry._ID));
+//                        String[] selectionArgsId = new String[1];
+//                        selectionArgsId[0] = String.valueOf(id);
+//
+//                        ContentValues cv = new ContentValues();
+//                        cv.put(MapRunnerContract.SettingEntry.COLUMN_VALUE, username);
+//                        getContentResolver().update(contacts_uri, cv, MapRunnerContract.SettingEntry._ID +" = " + String.valueOf(id), null);
+//                    }
+//                }
+//
+//            }
+//            catch (Exception e){
+//                e.printStackTrace();
+//                return false;
+//            }
             return true;
         }
 
