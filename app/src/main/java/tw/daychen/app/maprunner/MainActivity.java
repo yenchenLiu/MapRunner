@@ -1,12 +1,10 @@
 package tw.daychen.app.maprunner;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.Location;
-import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -56,6 +54,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final String PATH_Setting = "setting";
     private static final String PATH_Site = "site";
     private static final String PATH_SiteN2M = "siten2m";
+
+    private static String username = null;
 
 
     // Google API用戶端物件
@@ -145,6 +145,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         Intent intent = new Intent(this, AddSiteActivity.class);
         intent.putExtra("lat", currentLocation.getLatitude());
         intent.putExtra("long", currentLocation.getLongitude());
+        intent.putExtra("username", username);
         startActivityForResult(intent, addSiteCODE);
     }
     @Override
@@ -162,12 +163,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             // 位置資訊更新的時候，應用程式會自動呼叫LocationListener.onLocationChanged
             LocationServices.FusedLocationApi.requestLocationUpdates(
                     googleApiClient, locationRequest, MainActivity.this);
+            Log.d(LOG_TAG, LocationServices.FusedLocationApi.getLocationAvailability(googleApiClient).toString());
 
-            LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-            Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            Location location = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
             currentLocation = location;
 
-            Log.d(LOG_TAG, "load location");
+
+            Log.d(LOG_TAG, "current Location" + currentLocation.toString());
 
         }
     }
@@ -296,17 +298,21 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void addOwnSite() {
-        Log.d(LOG_TAG, "addOwnSite");
-        Uri contacts_uri = Uri.parse("content://"+CONTENT_AUTHORITY + "/"+PATH_Site+"/" );
-        try (Cursor cursor = getContentResolver().query(contacts_uri, null, null, null, null)) {
-            while (cursor.moveToNext()) {
-                int id = cursor.getInt(cursor.getColumnIndex(MapRunnerContract.SiteEntry._ID));
-                String title = cursor.getString(cursor.getColumnIndex(MapRunnerContract.SiteEntry.COLUMN_TITLE));
-                String content = cursor.getString(cursor.getColumnIndex(MapRunnerContract.SiteEntry.COLUMN_CONTENT));
-                String[] latlngStr = cursor.getString(cursor.getColumnIndex(MapRunnerContract.SiteEntry.COLUMN_LATLNG)).split(",");
-                LatLng latLng = new LatLng(
-                        Double.parseDouble(latlngStr[0]), Double.parseDouble(latlngStr[1]));
-                addMarker(latLng, title, String.valueOf(id));
+        if (username != null) {
+            Log.d(LOG_TAG, "addOwnSite");
+            Uri contacts_uri = Uri.parse("content://" + CONTENT_AUTHORITY + "/" + PATH_Site + "/");
+            String[] selectionArgs = new String[1];
+            selectionArgs[0] = username;
+            try (Cursor cursor = getContentResolver().query(contacts_uri, null, "username=?", selectionArgs, null)) {
+                while (cursor.moveToNext()) {
+                    int id = cursor.getInt(cursor.getColumnIndex(MapRunnerContract.SiteEntry._ID));
+                    String title = cursor.getString(cursor.getColumnIndex(MapRunnerContract.SiteEntry.COLUMN_TITLE));
+                    String content = cursor.getString(cursor.getColumnIndex(MapRunnerContract.SiteEntry.COLUMN_CONTENT));
+                    String[] latlngStr = cursor.getString(cursor.getColumnIndex(MapRunnerContract.SiteEntry.COLUMN_LATLNG)).split(",");
+                    LatLng latLng = new LatLng(
+                            Double.parseDouble(latlngStr[0]), Double.parseDouble(latlngStr[1]));
+                    addMarker(latLng, title, String.valueOf(id));
+                }
             }
         }
     }
@@ -316,7 +322,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onResume();
         Log.d(LOG_TAG, "onResume");
         // 連線到Google API用戶端
-        if (!googleApiClient.isConnected() && currentMarker != null) {
+        if (!googleApiClient.isConnected()) {
             googleApiClient.connect();
         }
 
@@ -327,10 +333,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onPause();
         Log.d(LOG_TAG, "onPause");
         // 移除位置請求服務
-        if (googleApiClient.isConnected()) {
-            LocationServices.FusedLocationApi.removeLocationUpdates(
-                    googleApiClient, this);
-        }
+//        if (googleApiClient.isConnected()) {
+//            LocationServices.FusedLocationApi.removeLocationUpdates(
+//                    googleApiClient, this);
+//        }
     }
 
     @Override
@@ -350,7 +356,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         if (resultCode == loginCODE) {
             Log.d(LOG_TAG, "Success Login");
-
+            try (Cursor cursor = getContentResolver().query(Uri.parse("content://tw.daychen.app.maprunner/setting/"), null, "key='username'", null, null)) {
+                cursor.moveToFirst();
+                username = cursor.getString(cursor.getColumnIndex(MapRunnerContract.SettingEntry.COLUMN_VALUE));
+            }
+            clearMarker();
         }
     }
     @Override

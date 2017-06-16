@@ -16,7 +16,7 @@ public class MapRunnerDbHelper extends SQLiteOpenHelper {
 
     private static final String LOG_TAG ="DbHelper";
     public static final String DATABASE_NAME = "maprunner.db";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 4;
 
     public MapRunnerDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -35,6 +35,7 @@ public class MapRunnerDbHelper extends SQLiteOpenHelper {
                 "CREATE TABLE " + SiteEntry.TABLE_NAME + " (" +
                         SiteEntry._ID                  + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                         SiteEntry.COLUMN_SERVER_ID     + " INTEGER NOT NULL, "                 +
+                        SiteEntry.COLUMN_USERNAME      + " TEXT NOT NULL, "                 +
                         SiteEntry.COLUMN_TITLE         + " TEXT NOT NULL, "                 +
                         SiteEntry.COLUMN_CONTENT       + " TEXT NOT NULL, "                 +
                         SiteEntry.COLUMN_CLASS         + " TEXT NOT NULL, "                 +

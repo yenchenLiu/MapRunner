@@ -374,44 +374,44 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 e.printStackTrace();
                 return false;
             }
-//            // get Username
-//            try {
-//                String urlQuery = "maprunner/users/get_username/";
-//                URL Url = NetUtils.buildUrl(urlQuery, LoginActivity.this);
-//                searchResult = NetUtils.getResponseFromAccessCode(Url, "GET", null);
-//                String username;
-//                username = JsonUtils.getUsernameFromJson(LoginActivity.this, searchResult);
-//                String selection_username = "key=username";
-//                try (Cursor cursor = getContentResolver().query(contacts_uri, null, selection, null, null)) {
-//
-//
-//                    Log.d(LOG_TAG, "username:" + String.valueOf(cursor.getCount()));
-//                    if (cursor.getCount() == 0){
-//                        ContentValues[] cv_list = new ContentValues[1];
-//                        cv_list[0] = new ContentValues();
-//                        cv_list[0].put(MapRunnerContract.SettingEntry.COLUMN_KEY, USERNAME_STR);
-//                        cv_list[0].put(MapRunnerContract.SettingEntry.COLUMN_VALUE, username);
-//                        getContentResolver().bulkInsert(contacts_uri, cv_list);
-//                    }
-//                    else {
-//                        cursor.moveToFirst();
-//                        Log.d(LOG_TAG, "key:" + cursor.getString(cursor.getColumnIndex(MapRunnerContract.SettingEntry.COLUMN_KEY)));
-//                        Log.d(LOG_TAG, "value:" + cursor.getString(cursor.getColumnIndex(MapRunnerContract.SettingEntry.COLUMN_VALUE)));
-//                        int id = cursor.getInt(cursor.getColumnIndex(MapRunnerContract.SettingEntry._ID));
-//                        String[] selectionArgsId = new String[1];
-//                        selectionArgsId[0] = String.valueOf(id);
-//
-//                        ContentValues cv = new ContentValues();
-//                        cv.put(MapRunnerContract.SettingEntry.COLUMN_VALUE, username);
-//                        getContentResolver().update(contacts_uri, cv, MapRunnerContract.SettingEntry._ID +" = " + String.valueOf(id), null);
-//                    }
-//                }
-//
-//            }
-//            catch (Exception e){
-//                e.printStackTrace();
-//                return false;
-//            }
+            // get Username
+            try {
+                String urlQuery = "maprunner/users/get_username/";
+                URL Url = NetUtils.buildUrl(urlQuery, LoginActivity.this);
+                searchResult = NetUtils.getResponseFromAccessCode(Url, "GET", null);
+                String username;
+                username = JsonUtils.getUsernameFromJson(LoginActivity.this, searchResult);
+                selectionArgs[0] = USERNAME_STR;
+                try (Cursor cursor = getContentResolver().query(contacts_uri, null, selection, selectionArgs, null)) {
+
+
+                    Log.d(LOG_TAG, "username_count:" + String.valueOf(cursor.getCount()));
+                    if (cursor.getCount() == 0){
+                        ContentValues[] cv_list = new ContentValues[1];
+                        cv_list[0] = new ContentValues();
+                        cv_list[0].put(MapRunnerContract.SettingEntry.COLUMN_KEY, USERNAME_STR);
+                        cv_list[0].put(MapRunnerContract.SettingEntry.COLUMN_VALUE, username);
+                        getContentResolver().bulkInsert(contacts_uri, cv_list);
+                    }
+                    else {
+                        cursor.moveToFirst();
+                        Log.d(LOG_TAG, "key:" + cursor.getString(cursor.getColumnIndex(MapRunnerContract.SettingEntry.COLUMN_KEY)));
+                        Log.d(LOG_TAG, "value:" + cursor.getString(cursor.getColumnIndex(MapRunnerContract.SettingEntry.COLUMN_VALUE)));
+                        int id = cursor.getInt(cursor.getColumnIndex(MapRunnerContract.SettingEntry._ID));
+                        String[] selectionArgsId = new String[1];
+                        selectionArgsId[0] = String.valueOf(id);
+
+                        ContentValues cv = new ContentValues();
+                        cv.put(MapRunnerContract.SettingEntry.COLUMN_VALUE, username);
+                        getContentResolver().update(contacts_uri, cv, MapRunnerContract.SettingEntry._ID +" = " + String.valueOf(id), null);
+                    }
+                }
+
+            }
+            catch (Exception e){
+                e.printStackTrace();
+                return false;
+            }
             return true;
         }
 

@@ -30,6 +30,7 @@ public class MapRunnerContract {
         public static final String TABLE_NAME = "Site";
 
         public static final String COLUMN_SERVER_ID = "server_id";
+        public static final String COLUMN_USERNAME = "username";
         public static final String COLUMN_TITLE = "title";
         public static final String COLUMN_CLASS = "class";
         public static final String COLUMN_CONTENT = "content";

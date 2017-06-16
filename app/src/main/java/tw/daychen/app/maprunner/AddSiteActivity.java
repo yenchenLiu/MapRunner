@@ -29,6 +29,7 @@ public class AddSiteActivity extends AppCompatActivity {
     private AddSiteNetworkTask mAddSiteTask = null;
     private double mLat;
     private double mLng;
+    private String username;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +44,7 @@ public class AddSiteActivity extends AppCompatActivity {
         setResult(3, intent); //requestCode需跟A.class的一樣
         mLat = intent.getDoubleExtra("lat", 0.0);
         mLng = intent.getDoubleExtra("long", 0.0);
+        username = intent.getStringExtra("username");
         String latlong = String.valueOf(intent.getDoubleExtra("lat", 0.0)) + "," + String.valueOf(intent.getDoubleExtra("long", 0.0));
         TextView latlong_show = (TextView) findViewById(R.id.latlang_show);
         latlong_show.setText(latlong);
@@ -163,9 +165,11 @@ public class AddSiteActivity extends AppCompatActivity {
         String cla = spinner.getSelectedItem().toString();
         EditText content = (EditText) findViewById(R.id.editContent);
         TextView latlng = (TextView) findViewById(R.id.latlang_show);
+
         ContentValues[] cv_list = new ContentValues[1];
         cv_list[0] = new ContentValues();
         cv_list[0].put(MapRunnerContract.SiteEntry.COLUMN_TITLE, title.getText().toString());
+        cv_list[0].put(MapRunnerContract.SiteEntry.COLUMN_USERNAME, username);
         cv_list[0].put(MapRunnerContract.SiteEntry.COLUMN_CLASS, cla);
         cv_list[0].put(MapRunnerContract.SiteEntry.COLUMN_LATLNG, latlng.getText().toString());
         cv_list[0].put(MapRunnerContract.SiteEntry.COLUMN_CONTENT, content.getText().toString());

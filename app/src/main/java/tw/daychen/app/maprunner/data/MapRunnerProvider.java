@@ -127,9 +127,9 @@ public class MapRunnerProvider extends ContentProvider {
             case CODE_SETTING: {
                 cursor = mOpenHelper.getReadableDatabase().query(
                         MapRunnerContract.SettingEntry.TABLE_NAME,
-                        null,
-                        null,
-                        null,
+                        projection,
+                        selection,
+                        selectionArgs,
                         null,
                         null,
                         MapRunnerContract.SettingEntry._ID
@@ -139,9 +139,9 @@ public class MapRunnerProvider extends ContentProvider {
             case CODE_SITE: {
                 cursor = mOpenHelper.getReadableDatabase().query(
                         MapRunnerContract.SiteEntry.TABLE_NAME,
-                        null,
-                        null,
-                        null,
+                        projection,
+                        selection,
+                        selectionArgs,
                         null,
                         null,
                         MapRunnerContract.SiteEntry._ID
@@ -151,9 +151,9 @@ public class MapRunnerProvider extends ContentProvider {
             case CODE_SITEN2M: {
                 cursor = mOpenHelper.getReadableDatabase().query(
                         MapRunnerContract.SiteN2MEntry.TABLE_NAME,
-                        null,
-                        null,
-                        null,
+                        projection,
+                        selection,
+                        selectionArgs,
                         null,
                         null,
                         MapRunnerContract.SiteN2MEntry._ID

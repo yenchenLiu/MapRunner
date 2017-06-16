@@ -63,7 +63,7 @@ public class NetUtils {
     }
 
     public static String getResponseFromAccessCode(URL url, String method, HashMap<String, String> postDataParams) throws IOException {
-        String selection = "key=?s";
+        String selection = "key=?";
         String[] selectionArgs = new String[1];
         selectionArgs[0] = ACCESS_TOKEN_STR;
         String accessToken = null;
