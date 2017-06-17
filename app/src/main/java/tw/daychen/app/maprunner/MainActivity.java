@@ -254,10 +254,22 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     // 在地圖加入指定位置與標題的標記
-    private void addMarker(LatLng place, String title, String id) {
+    private void addMarker(LatLng place, String title, String id, String category) {
         Log.d(LOG_TAG, "addMarker");
-        BitmapDescriptor icon =
-                BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher);
+
+
+        BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher);
+        if (category.equals("探索世界")) {
+            Log.d(LOG_TAG, "EXPLORE");
+            icon = BitmapDescriptorFactory.fromResource(R.mipmap.ic_explore);
+        } else if (category.equals("資訊")) {
+            Log.d(LOG_TAG, "INFO");
+            icon = BitmapDescriptorFactory.fromResource(R.mipmap.ic_info);
+        } else if (category.equals("紅利")) {
+            Log.d(LOG_TAG, "BOUNUS");
+            icon = BitmapDescriptorFactory.fromResource(R.mipmap.ic_bonus);
+        }
+
 
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(place)
@@ -266,6 +278,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
         Marker t = mMap.addMarker(markerOptions);
+        mMap.setOnMarkerClickListener(this);
         marker_id.put(t, id);
     }
 
@@ -303,10 +316,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 int id = cursor.getInt(cursor.getColumnIndex(MapRunnerContract.SiteEntry._ID));
                 String title = cursor.getString(cursor.getColumnIndex(MapRunnerContract.SiteEntry.COLUMN_TITLE));
                 String content = cursor.getString(cursor.getColumnIndex(MapRunnerContract.SiteEntry.COLUMN_CONTENT));
+                String category = cursor.getString(cursor.getColumnIndex(MapRunnerContract.SiteEntry.COLUMN_CLASS));
                 String[] latlngStr = cursor.getString(cursor.getColumnIndex(MapRunnerContract.SiteEntry.COLUMN_LATLNG)).split(",");
                 LatLng latLng = new LatLng(
                         Double.parseDouble(latlngStr[0]), Double.parseDouble(latlngStr[1]));
-                addMarker(latLng, title, String.valueOf(id));
+                addMarker(latLng, title, String.valueOf(id), category);
             }
         }
     }
@@ -356,11 +370,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public boolean onMarkerClick(final Marker marker) {
         Log.d(LOG_TAG, marker_id.get(marker));
+        Log.d(LOG_TAG, "marker clicked!");
         if (marker.equals(itemMarker))
         {
-            //handle click here
+            // open site detail
             return false;
         }
-        return false;
+        Intent detailIntent = new Intent(MainActivity.this, SiteDetailActivity.class);
+        detailIntent.putExtra("marker_id", marker_id.get(marker));
+
+        startActivity(detailIntent);
+        return true;
     }
+
+
+
 }
