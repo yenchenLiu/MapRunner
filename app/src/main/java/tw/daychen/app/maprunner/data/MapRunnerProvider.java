@@ -18,6 +18,7 @@ public class MapRunnerProvider extends ContentProvider {
     public static final int CODE_SETTING = 100;
     public static final int CODE_SITE = 101;
     public static final int CODE_SITEN2M = 102;
+    public static final int MARKER_WITH_ID = 103;
     private static final UriMatcher sUriMatcher = buildUriMatcher();
 
     private MapRunnerDbHelper mOpenHelper;
@@ -29,7 +30,10 @@ public class MapRunnerProvider extends ContentProvider {
 
         matcher.addURI(authority, MapRunnerContract.PATH_Setting, CODE_SETTING);
         matcher.addURI(authority, MapRunnerContract.PATH_Site, CODE_SITE);
+        matcher.addURI(authority, MapRunnerContract.PATH_Site + "/#", MARKER_WITH_ID);
+
         matcher.addURI(authority, MapRunnerContract.PATH_SiteN2M, CODE_SITEN2M);
+
 
         return matcher;
     }
@@ -50,6 +54,7 @@ public class MapRunnerProvider extends ContentProvider {
             case CODE_SETTING:
                 return setting_insert(db, uri, values);
             case CODE_SITE:
+            case MARKER_WITH_ID:
                 return site_insert(db, uri, values);
             case CODE_SITEN2M:
                 return siten2m_insert(db, uri, values);
@@ -145,6 +150,21 @@ public class MapRunnerProvider extends ContentProvider {
                         null,
                         null,
                         MapRunnerContract.SiteEntry._ID
+                );
+                break;
+            }
+            case MARKER_WITH_ID: {
+
+                String id = uri.getLastPathSegment();
+                Log.d("MARKER", id);
+                cursor = mOpenHelper.getReadableDatabase().query(
+                    MapRunnerContract.SiteEntry.TABLE_NAME,
+                    null,
+                    "_id=?",
+                    new String[]{id},
+                    null,
+                    null,
+                    null
                 );
                 break;
             }
