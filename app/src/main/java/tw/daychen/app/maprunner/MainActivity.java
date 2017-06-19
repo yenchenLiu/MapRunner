@@ -78,6 +78,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     // 顯示目前與儲存位置的標記物件
     private Marker currentMarker, itemMarker;
     private Map<Marker, String> marker_id = new HashMap<>();
+    private Map<Marker, String> marker_title = new HashMap<>();
+    private Map<Marker, String> marker_content = new HashMap<>();
     private ArrayList<Marker> nearbyMarker = new ArrayList<>();
     private ArrayList<HashMap<String, String>> cacheNearbyMarker;
 
@@ -267,25 +269,49 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     // 在地圖加入指定位置與標題的標記
-    private void addMarker(LatLng place, String title, String content, String id) {
+    private void addMarker(LatLng place, String title, String content, String id, String category) {
         Log.d(LOG_TAG, "addMarker");
-        BitmapDescriptor icon =
-                BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher);
+
+
+        BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher);
+        if (category.equals("探索世界")) {
+            Log.d(LOG_TAG, "EXPLORE");
+            icon = BitmapDescriptorFactory.fromResource(R.mipmap.ic_explore);
+        } else if (category.equals("資訊")) {
+            Log.d(LOG_TAG, "INFO");
+            icon = BitmapDescriptorFactory.fromResource(R.mipmap.ic_info);
+        } else if (category.equals("紅利")) {
+            Log.d(LOG_TAG, "BOUNUS");
+            icon = BitmapDescriptorFactory.fromResource(R.mipmap.ic_bonus);
+        }
+
 
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(place)
                 .title(title)
-                .snippet(content)
                 .icon(icon);
 
 
         Marker t = mMap.addMarker(markerOptions);
+        mMap.setOnMarkerClickListener(this);
         marker_id.put(t, id);
+        marker_title.put(t, title);
+        marker_content.put(t, content);
     }
-    private void addNearbyMarker(LatLng place, String title, String content, String id) {
+    private void addNearbyMarker(LatLng place, String title, String content, String id, String category) {
         Log.d(LOG_TAG, "addNearbyarker");
         BitmapDescriptor icon =
                 BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher);
+        if (category.equals("探索世界")) {
+            Log.d(LOG_TAG, "EXPLORE");
+            icon = BitmapDescriptorFactory.fromResource(R.mipmap.ic_explore);
+        } else if (category.equals("資訊")) {
+            Log.d(LOG_TAG, "INFO");
+            icon = BitmapDescriptorFactory.fromResource(R.mipmap.ic_info);
+        } else if (category.equals("紅利")) {
+            Log.d(LOG_TAG, "BOUNUS");
+            icon = BitmapDescriptorFactory.fromResource(R.mipmap.ic_bonus);
+        }
 
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(place)
@@ -297,6 +323,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         Marker t = mMap.addMarker(markerOptions);
         nearbyMarker.add(t);
+
+        mMap.setOnMarkerClickListener(this);
+        marker_id.put(t, id);
+        marker_title.put(t, title);
+        marker_content.put(t, content);
 
     }
 
@@ -324,13 +355,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void clearMarker() {
         for(Map.Entry<Marker, String> entry: marker_id.entrySet()){
+            marker_id.remove(entry.getKey());
+            marker_title.remove(entry.getKey());
+            marker_content.remove(entry.getKey());
             entry.getKey().remove();
         }
-        marker_id.clear();
         addOwnSite();
     }
 
     private void addOwnSite() {
+
         if (username != null) {
             Log.d(LOG_TAG, "addOwnSite");
             Uri contacts_uri = Uri.parse("content://" + CONTENT_AUTHORITY + "/" + PATH_Site + "/");
@@ -341,10 +375,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     int id = cursor.getInt(cursor.getColumnIndex(MapRunnerContract.SiteEntry._ID));
                     String title = cursor.getString(cursor.getColumnIndex(MapRunnerContract.SiteEntry.COLUMN_TITLE));
                     String content = cursor.getString(cursor.getColumnIndex(MapRunnerContract.SiteEntry.COLUMN_CONTENT));
+                    String category = cursor.getString(cursor.getColumnIndex(MapRunnerContract.SiteEntry.COLUMN_CLASS));
                     String[] latlngStr = cursor.getString(cursor.getColumnIndex(MapRunnerContract.SiteEntry.COLUMN_LATLNG)).split(",");
                     LatLng latLng = new LatLng(
                             Double.parseDouble(latlngStr[0]), Double.parseDouble(latlngStr[1]));
-                    addMarker(latLng, title, content, String.valueOf(id));
+                    addMarker(latLng, title, content, String.valueOf(id), category);
                 }
             }
         }
@@ -407,12 +442,25 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public boolean onMarkerClick(final Marker marker) {
-        Log.d(LOG_TAG, "mark click");
-        if (marker.equals(itemMarker)) {
-            //handle click here
+        try {
+            Log.d(LOG_TAG, marker_id.get(marker));
+
+            Log.d(LOG_TAG, "marker clicked!");
+            if (marker.equals(itemMarker)) {
+                // open site detail
+                return false;
+            }
+            Intent detailIntent = new Intent(MainActivity.this, SiteDetailActivity.class);
+            detailIntent.putExtra("id", marker_id.get(marker));
+            detailIntent.putExtra("title", marker_title.get(marker));
+            detailIntent.putExtra("content", marker_content.get(marker));
+
+            startActivity(detailIntent);
+            return true;
+        }
+        catch (Exception e){
             return false;
         }
-        return false;
     }
 
     private class CheckSiteNetworkTask extends AsyncTask<Void, Void, Boolean> {
@@ -459,6 +507,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             mSiteTask = null;
             if (success) {
                 for (Marker m: nearbyMarker){
+                    marker_id.remove(m);
+                    marker_content.remove(m);
+                    marker_title.remove(m);
                     m.remove();
                 }
                 nearbyMarker.clear();
@@ -467,7 +518,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     LatLng location = new LatLng(Double.parseDouble(data.get("lat")),
                             Double.parseDouble(data.get("long")));
 
-                    addNearbyMarker(location, data.get("title"), data.get("content"), data.get("id"));
+                    addNearbyMarker(location, data.get("title"), data.get("content"), data.get("id"), data.get("class"));
                 }
             }
             cacheNearbyMarker = null;
