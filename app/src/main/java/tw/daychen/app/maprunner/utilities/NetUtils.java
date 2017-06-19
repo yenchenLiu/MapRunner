@@ -91,15 +91,22 @@ public class NetUtils {
         String response = "";
         Log.d("Net", "get response");
         try {
-            urlConnection.setRequestMethod(method);
+
             if (method == "POST") {
                 urlConnection.setDoOutput(true);
+                Log.d("Net", "setDoOutput");
             }
             urlConnection.setDoInput(true);
+
+            urlConnection.setRequestMethod(method);
+            urlConnection.setUseCaches(false);
+
+
             if (headerParams != null) {
                 for (Map.Entry<String, String> header : headerParams.entrySet()) {
                     urlConnection.setRequestProperty(header.getKey(), header.getValue());
                 }
+                Log.d("Net", "setHeader");
             }
 
             if (method == "POST") {
@@ -113,6 +120,7 @@ public class NetUtils {
                 writer.close();
 
                 os.close();
+                Log.d("Net", "setPost");
             }
             urlConnection.connect();
             Log.d("Net", "method :" + urlConnection.getRequestMethod());
@@ -124,13 +132,14 @@ public class NetUtils {
                 while ((line = br.readLine()) != null) {
                     response += line;
                 }
+                Log.d("Net", "success:"+response);
             } else {
                 String line;
                 BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getErrorStream()));
                 while ((line = br.readLine()) != null) {
                     response += line;
                 }
-                Log.d("net", "error:"+response);
+                Log.d("Net", "error:"+response);
                 return null;
             }
         } finally {

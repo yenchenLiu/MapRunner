@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.Location;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -34,10 +35,15 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import tw.daychen.app.maprunner.data.MapRunnerContract;
+import tw.daychen.app.maprunner.utilities.JsonUtils;
+import tw.daychen.app.maprunner.utilities.NetUtils;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener, GoogleMap.OnMarkerClickListener {
@@ -55,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final String PATH_Site = "site";
     private static final String PATH_SiteN2M = "siten2m";
 
+    private CheckSiteNetworkTask mSiteTask = null;
     private static String username = null;
 
 
@@ -70,7 +77,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     // 顯示目前與儲存位置的標記物件
     private Marker currentMarker, itemMarker;
-    private Map<Marker, String> marker_id = new HashMap<Marker,String>();
+    private Map<Marker, String> marker_id = new HashMap<>();
+    private ArrayList<Marker> nearbyMarker = new ArrayList<>();
+    private ArrayList<HashMap<String, String>> cacheNearbyMarker;
+
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -118,7 +128,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
 
 
-
         // 建立Google API用戶端物件
         configGoogleApiClient();
 
@@ -135,8 +144,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         Log.d(LOG_TAG, "onCreate");
     }
+
     private void addSite() {
-        if (currentLocation == null){
+        if (currentLocation == null) {
             Toast.makeText(this, "尚未取得GPS訊號。", Toast.LENGTH_SHORT)
                     .show();
             return;
@@ -148,11 +158,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         intent.putExtra("username", username);
         startActivityForResult(intent, addSiteCODE);
     }
+
     @Override
     public void onConnected(Bundle bundle) {
         // 已經連線到Google Services
         Log.d(LOG_TAG, "onConnected");
-        if ( ContextCompat.checkSelfPermission( this, android.Manifest.permission.ACCESS_COARSE_LOCATION ) != PackageManager.PERMISSION_GRANTED ) {
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Log.d(LOG_TAG, "not have Permission");
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     MY_PERMISSIONS_REQUEST_LOCATION);
@@ -207,13 +218,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         // 設定目前位置的標記
         if (currentMarker == null) {
             currentMarker = mMap.addMarker(new MarkerOptions().position(latLng));
-        }
-        else {
+        } else {
             currentMarker.setPosition(latLng);
         }
 
         // 移動地圖到目前的位置
         moveMap(latLng);
+        addOtherSite();
     }
 
 
@@ -226,7 +237,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         Intent intent = getIntent();
         double lat = intent.getDoubleExtra("lat", 24.95);
         double lng = intent.getDoubleExtra("lng", 121.23);
-        Log.d(LOG_TAG, "lat:"+ String.valueOf(lat) + ",lng"+ String.valueOf(lng));
+        Log.d(LOG_TAG, "lat:" + String.valueOf(lat) + ",lng" + String.valueOf(lng));
         if (lat != 0.0 && lng != 0.0) {
             // 建立座標物件
             LatLng itemPlace = new LatLng(lat, lng);
@@ -256,7 +267,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     // 在地圖加入指定位置與標題的標記
-    private void addMarker(LatLng place, String title, String id) {
+    private void addMarker(LatLng place, String title, String content, String id) {
         Log.d(LOG_TAG, "addMarker");
         BitmapDescriptor icon =
                 BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher);
@@ -264,12 +275,32 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(place)
                 .title(title)
+                .snippet(content)
                 .icon(icon);
 
 
         Marker t = mMap.addMarker(markerOptions);
         marker_id.put(t, id);
     }
+    private void addNearbyMarker(LatLng place, String title, String content, String id) {
+        Log.d(LOG_TAG, "addNearbyarker");
+        BitmapDescriptor icon =
+                BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher);
+
+        MarkerOptions markerOptions = new MarkerOptions();
+        markerOptions.position(place)
+                .title(title)
+                .snippet(content)
+                .icon(icon);
+        Log.d(LOG_TAG, place.toString());
+        Log.d(LOG_TAG, markerOptions.toString());
+
+        Marker t = mMap.addMarker(markerOptions);
+        nearbyMarker.add(t);
+
+    }
+
+
 
     // 建立Google API用戶端物件
     private synchronized void configGoogleApiClient() {
@@ -291,8 +322,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
-    private void clearMarker(){
-        mMap.clear();
+    private void clearMarker() {
+        for(Map.Entry<Marker, String> entry: marker_id.entrySet()){
+            entry.getKey().remove();
+        }
         marker_id.clear();
         addOwnSite();
     }
@@ -311,11 +344,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     String[] latlngStr = cursor.getString(cursor.getColumnIndex(MapRunnerContract.SiteEntry.COLUMN_LATLNG)).split(",");
                     LatLng latLng = new LatLng(
                             Double.parseDouble(latlngStr[0]), Double.parseDouble(latlngStr[1]));
-                    addMarker(latLng, title, String.valueOf(id));
+                    addMarker(latLng, title, content, String.valueOf(id));
                 }
             }
         }
     }
+
+    private void addOtherSite() {
+        String urlQuery = "maprunner/site/get_other_site/";
+        URL Url = NetUtils.buildUrl(urlQuery, this);
+        mSiteTask = new CheckSiteNetworkTask(currentLocation.getLongitude(), currentLocation.getLatitude(), Url);
+        mSiteTask.execute((Void) null);
+    }
+
 
     @Override
     protected void onResume() {
@@ -333,10 +374,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onPause();
         Log.d(LOG_TAG, "onPause");
         // 移除位置請求服務
-//        if (googleApiClient.isConnected()) {
-//            LocationServices.FusedLocationApi.removeLocationUpdates(
-//                    googleApiClient, this);
-//        }
+        if (googleApiClient.isConnected()) {
+            LocationServices.FusedLocationApi.removeLocationUpdates(
+                    googleApiClient, this);
+        }
     }
 
     @Override
@@ -363,14 +404,78 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             clearMarker();
         }
     }
+
     @Override
     public boolean onMarkerClick(final Marker marker) {
-        Log.d(LOG_TAG, marker_id.get(marker));
-        if (marker.equals(itemMarker))
-        {
+        Log.d(LOG_TAG, "mark click");
+        if (marker.equals(itemMarker)) {
             //handle click here
             return false;
         }
         return false;
+    }
+
+    private class CheckSiteNetworkTask extends AsyncTask<Void, Void, Boolean> {
+
+        private final double mLongitude;
+        private final double mLatitude;
+        private final URL mUrl;
+
+
+        CheckSiteNetworkTask(double longitude, double latitude, URL url) {
+            mLongitude = longitude;
+            mLatitude = latitude;
+            mUrl = url;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            String searchResult;
+            try {
+                cacheNearbyMarker = null;
+                HashMap<String, String> postData = new HashMap<>();
+                postData.put("lat", String.valueOf(mLatitude));
+                postData.put("long", String.valueOf(mLongitude));
+                searchResult = NetUtils.getResponseFromAccessCode(mUrl, "POST", postData);
+
+                try {
+
+                    cacheNearbyMarker = JsonUtils.getNearbySiteFromJson(searchResult);
+
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return false;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+            mSiteTask = null;
+            if (success) {
+                for (Marker m: nearbyMarker){
+                    m.remove();
+                }
+                nearbyMarker.clear();
+                for (HashMap<String, String> data : cacheNearbyMarker) {
+                    Log.d(LOG_TAG, data.toString());
+                    LatLng location = new LatLng(Double.parseDouble(data.get("lat")),
+                            Double.parseDouble(data.get("long")));
+
+                    addNearbyMarker(location, data.get("title"), data.get("content"), data.get("id"));
+                }
+            }
+            cacheNearbyMarker = null;
+        }
+
+        @Override
+        protected void onCancelled() {
+            mSiteTask = null;
+        }
     }
 }

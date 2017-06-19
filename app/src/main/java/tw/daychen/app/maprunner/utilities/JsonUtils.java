@@ -2,9 +2,11 @@ package tw.daychen.app.maprunner.utilities;
 
 import android.content.Context;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -39,5 +41,24 @@ public final class JsonUtils {
         final String ID_CODE = "id";
         JSONObject resultJson = new JSONObject(loginJsonStr);
         return resultJson.getInt(ID_CODE);
+    }
+
+    public static ArrayList<HashMap<String, String>> getNearbySiteFromJson(String jsonStr) throws JSONException{
+        ArrayList<HashMap<String, String>> siteArray = new ArrayList<>();
+
+        JSONArray resultJson = new JSONArray(jsonStr);
+
+        for(int i=0; i<resultJson.length(); i++){
+            JSONObject row = resultJson.getJSONObject(i);
+            HashMap<String, String> t = new HashMap<>();
+            t.put("id", String.valueOf(row.getInt("id")));
+            t.put("lat", String.valueOf(row.getDouble("latitude")));
+            t.put("long", String.valueOf(row.getDouble("longitude")));
+            t.put("title", String.valueOf(row.getString("title")));
+            t.put("content", String.valueOf(row.getString("content")));
+            t.put("class", row.getString("site_class"));
+            siteArray.add(t);
+        }
+        return siteArray;
     }
 }
