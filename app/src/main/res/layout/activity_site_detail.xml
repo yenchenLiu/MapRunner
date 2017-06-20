@@ -17,11 +17,11 @@
 
         <TextView
             android:id="@+id/label_title"
-            android:layout_width="179dp"
+            android:layout_width="74dp"
             android:layout_height="30dp"
             android:layout_marginBottom="10dp"
             android:text="標題"
-            android:textSize="13dp" />
+            android:textSize="24sp" />
 
         <TextView
             android:id="@+id/tv_title"
@@ -29,7 +29,7 @@
             android:layout_height="30dp"
             android:layout_weight="1"
 
-            />
+            android:textSize="24sp" />
     </LinearLayout>
 
     <LinearLayout
@@ -39,19 +39,17 @@
 
         <TextView
             android:id="@+id/label_content"
-            android:layout_width="match_parent"
+            android:layout_width="75dp"
             android:layout_height="30dp"
             android:layout_marginBottom="10dp"
-            android:layout_weight="1"
             android:text="內容"
-            android:textSize="13dp" />
+            android:textSize="24sp" />
 
         <TextView
             android:id="@+id/tv_content"
             android:layout_width="match_parent"
-            android:layout_height="30dp"
-            android:layout_weight="1"
-            android:textSize="18dp" />
+            android:layout_height="347dp"
+            android:textSize="24sp" />
     </LinearLayout>
     <Button
         android:layout_width="match_parent"

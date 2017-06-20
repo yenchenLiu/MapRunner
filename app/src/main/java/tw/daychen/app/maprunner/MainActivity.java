@@ -354,11 +354,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void clearMarker() {
+
         for(Map.Entry<Marker, String> entry: marker_id.entrySet()){
-            marker_id.remove(entry.getKey());
-            marker_title.remove(entry.getKey());
-            marker_content.remove(entry.getKey());
-            entry.getKey().remove();
+            try {
+                marker_id.remove(entry.getKey());
+                marker_title.remove(entry.getKey());
+                marker_content.remove(entry.getKey());
+                entry.getKey().remove();
+            } catch (Exception e){
+                continue;
+            }
         }
         addOwnSite();
     }
@@ -507,10 +512,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             mSiteTask = null;
             if (success) {
                 for (Marker m: nearbyMarker){
-                    marker_id.remove(m);
-                    marker_content.remove(m);
-                    marker_title.remove(m);
-                    m.remove();
+                    try {
+                        marker_id.remove(m);
+                        marker_content.remove(m);
+                        marker_title.remove(m);
+                        m.remove();
+                    } catch (Exception e){
+                        continue;
+                    }
                 }
                 nearbyMarker.clear();
                 for (HashMap<String, String> data : cacheNearbyMarker) {
