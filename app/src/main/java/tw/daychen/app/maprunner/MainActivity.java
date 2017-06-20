@@ -354,15 +354,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void clearMarker() {
-
-        for(Map.Entry<Marker, String> entry: marker_id.entrySet()){
-            try {
-                marker_id.remove(entry.getKey());
-                marker_title.remove(entry.getKey());
-                marker_content.remove(entry.getKey());
-                entry.getKey().remove();
-            } catch (Exception e){
-                continue;
+        if (marker_id != null) {
+            for (Map.Entry<Marker, String> entry : marker_id.entrySet()) {
+                try {
+                    marker_id.remove(entry.getKey());
+                    marker_title.remove(entry.getKey());
+                    marker_content.remove(entry.getKey());
+                    entry.getKey().remove();
+                } catch (Exception e) {
+                    continue;
+                }
             }
         }
         addOwnSite();
