@@ -413,6 +413,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             googleApiClient.connect();
         }
 
+        // 檢查是否有登入
+        try (Cursor cursor = getContentResolver().query(Uri.parse("content://tw.daychen.app.maprunner/setting/"), null, "key='username'", null, null)) {
+            Log.d(LOG_TAG, String.valueOf(cursor.getCount()));
+            if (cursor.getCount() == 0) {
+                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                startActivityForResult(intent, loginCODE);
+            }
+        }
+
     }
 
     @Override
