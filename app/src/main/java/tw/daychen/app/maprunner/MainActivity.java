@@ -97,8 +97,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 case R.id.navigation_dashboard:
                     mTextMessage.setText(R.string.title_dashboard);
                     return true;
-                case R.id.navigation_notifications:
-                    mTextMessage.setText(R.string.title_notifications);
+                case R.id.navigation_logout:
+                    getContentResolver().delete(Uri.parse("content://tw.daychen.app.maprunner/setting/"),"key='username'", null);
+                    getContentResolver().delete(Uri.parse("content://tw.daychen.app.maprunner/setting/"),"key='server_access_token'", null);
+                    Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                    startActivityForResult(intent, loginCODE);
                     return true;
             }
             return false;
@@ -354,7 +357,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void clearMarker() {
-        if (marker_id != null) {
+        try {
             for (Map.Entry<Marker, String> entry : marker_id.entrySet()) {
                 try {
                     marker_id.remove(entry.getKey());
@@ -365,6 +368,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     continue;
                 }
             }
+        } catch (Exception e){
+            e.printStackTrace();
         }
         addOwnSite();
     }
@@ -441,6 +446,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             try (Cursor cursor = getContentResolver().query(Uri.parse("content://tw.daychen.app.maprunner/setting/"), null, "key='username'", null, null)) {
                 cursor.moveToFirst();
                 username = cursor.getString(cursor.getColumnIndex(MapRunnerContract.SettingEntry.COLUMN_VALUE));
+            } catch (Exception e){
+                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                startActivityForResult(intent, loginCODE);
             }
             clearMarker();
         }

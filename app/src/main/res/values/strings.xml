@@ -2,7 +2,7 @@
     <string name="app_name">Map Runner</string>
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
+    <string name="title_logout">Logout</string>
     <string name="title_activity_maps">Map</string>
     <string name="google_play_service_missing">裝置沒有安裝Google Play服務</string>
     <string name="title_activity_item">ItemActivity</string>

@@ -29,6 +29,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import org.json.JSONException;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -65,6 +67,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * Keep track of the login task to ensure we can cancel it if requested.
      */
     private UserLoginTask mAuthTask = null;
+    private SignInTestTask mSignInTask = null;
 
     // UI references.
     private AutoCompleteTextView mEmailView;
@@ -102,9 +105,14 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+
+        showProgress(true);
+        mSignInTask = new SignInTestTask();
+        mSignInTask.execute((Void) null);
     }
 
     private boolean tryAccessCode() {
+
         return false;
     }
 
@@ -308,6 +316,50 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
+    public class SignInTestTask extends AsyncTask<Void, Void, Boolean> {
+        protected Boolean doInBackground(Void... params) {
+            String searchResult = null;
+            String urlQuery = "maprunner/users/get_username/";
+            URL Url = NetUtils.buildUrl(urlQuery, LoginActivity.this);
+            try {
+                searchResult = NetUtils.getResponseFromAccessCode(Url, "GET", null);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
+            }
+            if (searchResult == null){
+                return false;
+            }
+            String username;
+            try {
+                username = JsonUtils.getUsernameFromJson(LoginActivity.this, searchResult);
+            } catch (JSONException e) {
+                e.printStackTrace();
+                return false;
+            }
+            if (username != null){
+                return true;
+            }
+            return false;
+        }
+        @Override
+        protected void onPostExecute(final Boolean success) {
+            mSignInTask = null;
+            showProgress(false);
+
+            if (success) {
+                setResult(loginCODE, getIntent());
+                finish();
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            mSignInTask = null;
+            showProgress(false);
+        }
+    }
+
     public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
 
         private final String mEmail;
